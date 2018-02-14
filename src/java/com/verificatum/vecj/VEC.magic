@@ -1,0 +1,401 @@
+
+/*
+ * Copyright 2008-2018 Douglas Wikstrom
+ *
+ * This file is part of Verificatum Elliptic Curve library (VEC).
+ *
+ * VEC is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * VEC is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General
+ * Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public
+ * License along with VEC. If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
+
+package com.verificatum.vecj;
+
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+
+// We use C style to name things in this file, since it should
+// correspond to the native code.
+
+//CHECKSTYLE.OFF: LocalVariableName
+//CHECKSTYLE.OFF: LocalFinalVariableName
+//CHECKSTYLE.OFF: MethodName
+//CHECKSTYLE.OFF: ParameterName
+
+/**
+ * Provides a Java interface to some of the routines of the GMP
+ * Elliptic Curve (VEC) library.
+ *
+ * @author Douglas Wikstrom
+ */
+@SuppressWarnings({"PMD.MethodNamingConventions",
+                   "PMD.VariableNamingConventions"})
+public final class VEC {
+
+    /**
+     * Avoid accidental instantiation.
+     */
+    private VEC() {
+    }
+
+    /**
+     * Load native code upon loading this class.
+     */
+    static {
+        System.loadLibrary("vecj-M4_VERSION");
+        // + VEC.class.getPackage().getSpecificationVersion());
+    }
+
+    /**
+     * Returns an array of the names (in ASCII) of implemented
+     * standard curves.
+     *
+     * @return Array of the names of implemented standard curves.
+     */
+    public static native byte[][] curve_get_names();
+
+    /**
+     * Returns an array of the names (in ASCII) of implemented
+     * standard curves.
+     *
+     * @return Array of the names of implemented standard curves.
+     */
+    public static String[] getCurveNames() {
+
+        final byte[][] byteNames = curve_get_names();
+
+        final String[] names = new String[byteNames.length];
+        for (int i = 0; i < names.length; i++) {
+            try {
+                names[i] = new String(byteNames[i], "UTF8");
+            } catch (UnsupportedEncodingException uee) {
+                final String e = "Unable to interpret curve name!";
+                throw new Error(e, uee); // NOPMD
+            }
+        }
+        return names;
+    }
+
+    /**
+     * Returns a native pointer to the named standard curve. The
+     * native pointer is represented as an array of bytes.
+     *
+     * @param name Name of standard curve.
+     * @return Native pointer to the named curve.
+     */
+    public static native byte[] curve_get_named(final byte[] name);
+
+    /**
+     * Returns a native pointer to the named standard curve. The
+     * native pointer is represented as an array of bytes.
+     *
+     * @param name Name of standard curve.
+     * @return Native pointer to the named curve.
+     */
+    public static byte[] getCurve(final String name) {
+        byte[] bytes = null;
+        try {
+            bytes = name.getBytes("UTF8");
+        } catch (UnsupportedEncodingException uee) {
+            throw new Error("This is a bug!", uee); // NOPMD
+        }
+        return curve_get_named(bytes);
+    }
+
+    /**
+     * Releases the resources allocated by the curve pointed to by the
+     * given native pointer.
+     *
+     * @param curve_ptr Native pointer to a curve represented as array
+     * of bytes.
+     */
+    public static native void curve_free(final byte[] curve_ptr);
+
+    /**
+     * Returns the parameters of the curve in the following order:
+     * <i>modulus</i>,<i>a</i>, <i>b</i>, <i>gx</i>, <i>gy</i>, and
+     * <i>n</i>, where the first three integers defines the curve, the
+     * next two integers are the coordinates of the standard generator
+     * of the curve, and the the last parameter is the order of the
+     * group.
+     *
+     * @param curve_ptr Native pointer to a curve represented as array
+     * of bytes.
+     * @return Curve parameters as byte arrays.
+     */
+    public static native byte[][] get_curve_params(final byte[] curve_ptr);
+
+    /**
+     * Returns the parameters of the curve in the following order:
+     * <i>modulus</i>,<i>a</i>, <i>b</i>, <i>gx</i>, <i>gy</i>, and
+     * <i>n</i>, where the first three integers defines the curve, the
+     * next two integers are the coordinates of the standard generator
+     * of the curve, and the the last parameter is the order of the
+     * group.
+     *
+     * @param curve_ptr Native pointer to a curve represented as array
+     * of bytes.
+     * @return Curve parameters.
+     */
+    public static BigInteger[] getCurveParams(final byte[] curve_ptr) {
+
+        final byte[][] data = get_curve_params(curve_ptr);
+
+        final BigInteger[] res = new BigInteger[6];
+        res[0] = new BigInteger(data[0]);
+        res[1] = new BigInteger(data[1]);
+        res[2] = new BigInteger(data[2]);
+        res[3] = new BigInteger(data[3]);
+        res[4] = new BigInteger(data[4]);
+        res[5] = new BigInteger(data[5]);
+
+        return res;
+    }
+
+    /**
+     * Computes the modular square root of a quadratic residue using
+     * the Shanks-Tonelli algorithm. The output is undefined if the
+     * input is a quadratic non-residue, or if the modulus is not a
+     * positive odd prime.
+     *
+     * @param a Quadratic residue.
+     * @param modulus Modulus.
+     * @return Square root of first input modulo the second.
+     */
+    public static native byte[] sqrt(final byte[] a, final byte[] modulus);
+
+    /**
+     * Computes the modular square root of a quadratic residue using
+     * the Shanks-Tonelli algorithm. The output is undefined if the
+     * input is a quadratic non-residue, or if the modulus is not a
+     * positive odd prime.
+     *
+     * @param a Quadratic residue.
+     * @param modulus Modulus.
+     * @return Square root of first input modulo the second.
+     */
+    public static BigInteger sqrt(final BigInteger a,
+                                  final BigInteger modulus) {
+        return new BigInteger(sqrt(a.toByteArray(), modulus.toByteArray()));
+    }
+
+    /**
+     * Adds two points on the given elliptic curve. The input consists
+     * of the coordinates of the points of canonical form and the
+     * output is a pair of coordinates of canonical form. If the
+     * points are not on the curve or if their coordinates are not of
+     * canonical form, then the output is undefined.
+     *
+     * @param curve_ptr Native pointer to curve.
+     * @param x1 x coordinate of first point.
+     * @param y1 y coordinate of first point.
+     * @param x2 x coordinate of second point.
+     * @param y2 y coordinate of second point.
+     * @return Coordinates of sum.
+     */
+    public static native byte[][] add(final byte[] curve_ptr,
+                                      final byte[] x1,
+                                      final byte[] y1,
+                                      final byte[] x2,
+                                      final byte[] y2);
+
+    /**
+     * Adds two points on the given elliptic curve. The input consists
+     * of the coordinates of the points of canonical form and the
+     * output is a pair of coordinates of canonical form. If the
+     * points are not on the curve or if their coordinates are not of
+     * canonical form, then the output is undefined.
+     *
+     * @param curve_ptr Native pointer to curve.
+     * @param x1 x coordinate of first point.
+     * @param y1 y coordinate of first point.
+     * @param x2 x coordinate of second point.
+     * @param y2 y coordinate of second point.
+     * @return Coordinates of sum.
+     */
+    public static BigInteger[] add(final byte[] curve_ptr,
+                                   final BigInteger x1,
+                                   final BigInteger y1,
+                                   final BigInteger x2,
+                                   final BigInteger y2) {
+        final byte[][] res = add(curve_ptr,
+                                 x1.toByteArray(),
+                                 y1.toByteArray(),
+                                 x2.toByteArray(),
+                                 y2.toByteArray());
+        final BigInteger[] bires = new BigInteger[2];
+        bires[0] = new BigInteger(res[0]);
+        bires[1] = new BigInteger(res[1]);
+
+        return bires;
+    }
+
+    /**
+     * Computes a scalar multiplication on the curve. The input must
+     * consist of the coordinates of a point of canonical form and a
+     * non-negative scalar smaller than the order of the curve. If
+     * this is not the case, then the behaviour is undefined.
+     *
+     * @param curve_ptr Native pointer to curve.
+     * @param x x coordinate of point.
+     * @param y y coordinate of point.
+     * @param scalar Scalar used to multiply.
+     * @return Multiple of point.
+     */
+    public static native byte[][] mul(final byte[] curve_ptr,
+                                      final byte[] x,
+                                      final byte[] y,
+                                      final byte[] scalar);
+
+    /**
+     * Computes a scalar multiplication on the curve. The input must
+     * consist of the coordinates of a point of canonical form and a
+     * non-negative scalar smaller than the order of the curve. If
+     * this is not the case, then the behaviour is undefined.
+     *
+     * @param curve_ptr Native pointer to curve.
+     * @param x x coordinate of point.
+     * @param y y coordinate of point.
+     * @param scalar Scalar used to multiply.
+     * @return Multiple of point.
+     */
+    public static BigInteger[] mul(final byte[] curve_ptr,
+                                   final BigInteger x,
+                                   final BigInteger y,
+                                   final BigInteger scalar) {
+        final byte[][] res = mul(curve_ptr,
+                                 x.toByteArray(),
+                                 y.toByteArray(),
+                                 scalar.toByteArray());
+        final BigInteger[] bires = new BigInteger[2];
+        bires[0] = new BigInteger(res[0]);
+        bires[1] = new BigInteger(res[1]);
+
+        return bires;
+    }
+
+    /**
+     * Computes a simultaneous scalar multiplication on the curve. The
+     * input must consist of the coordinates of the points to be
+     * multiplied of canonical form and non-negative scalars smaller
+     * than the order of the curve. If this is not the case, then the
+     * behaviour is undefined.
+     *
+     * @param curve_ptr Native pointer to curve.
+     * @param basesx x coordinates of the points.
+     * @param basesy y coordinates of the points.
+     * @param scalars Scalar used to multiply.
+     * @return Multiple of point.
+     */
+    public static native byte[][] smul(final byte[] curve_ptr,
+                                       final byte[][] basesx,
+                                       final byte[][] basesy,
+                                       final byte[][] scalars);
+
+    /**
+     * Performs pre-computation for fixed-basis multiplications. The
+     * input must consist of the coordinates of the basis point to be
+     * multiplied of canonical form and the expected number of
+     * fixed-basis multiplications expected to be made. If this is not
+     * the case, then the behaviour is undefined.
+     *
+     * @param curve_ptr Native pointer to curve.
+     * @param basisx x coordinate of basis point.
+     * @param basisy y coordinate of basis point.
+     * @param size Expected number of fixed-basis multiplications to
+     * be done.
+     * @return Native pointer to pre-computed values represented as an
+     * array of bytes.
+     */
+    public static native byte[] fmul_precompute(final byte[] curve_ptr,
+                                                final byte[] basisx,
+                                                final byte[] basisy,
+                                                final int size);
+
+    /**
+     * Performs pre-computation for fixed-basis multiplications. The
+     * input must consist of the coordinates of the basis point to be
+     * multiplied of canonical form and the expected number of
+     * fixed-basis multiplications expected to be made. If this is not
+     * the case, then the behaviour is undefined.
+     *
+     * @param curve_ptr Native pointer to curve.
+     * @param basisx x coordinate of basis point.
+     * @param basisy y coordinate of basis point.
+     * @param size Expected number of fixed-basis multiplications to
+     * be done.
+     * @return Native pointer to pre-computed values represented as an
+     * array of bytes.
+     */
+    public static byte[] fmul_precompute(final byte[] curve_ptr,
+                                         final BigInteger basisx,
+                                         final BigInteger basisy,
+                                         final int size) {
+        return fmul_precompute(curve_ptr,
+                               basisx.toByteArray(),
+                               basisy.toByteArray(),
+                               size);
+    }
+
+    /**
+     * Computes a fixed-basis multiplication using the given
+     * pre-computed table and non-negative scalar smaller than the
+     * order of the curve. If this is not the case, then the behaviour
+     * is undefined.
+     *
+     * @param curve_ptr Native pointer to curve.
+     * @param table_ptr Native pointer to fixed-basis multiplication
+     * table.
+     * @param scalar Scalar used to multiply.
+     * @return Resulting point.
+     */
+    public static native byte[][] fmul(final byte[] curve_ptr,
+                                       final byte[] table_ptr,
+                                       final byte[] scalar);
+
+    /**
+     * Computes a fixed-basis multiplication using the given
+     * pre-computed table and non-negative scalar smaller than the
+     * order of the curve. If this is not the case, then the behaviour
+     * is undefined.
+     *
+     * @param curve_ptr Native pointer to curve.
+     * @param table_ptr Native pointer to fixed-basis multiplication
+     * table.
+     * @param scalar Scalar used to multiply.
+     * @return Resulting point.
+     */
+    public static BigInteger[] fmul(final byte[] curve_ptr,
+                                    final byte[] table_ptr,
+                                    final BigInteger scalar) {
+        final byte[][] res = fmul(curve_ptr, table_ptr, scalar.toByteArray());
+        final BigInteger[] bires = new BigInteger[2];
+        bires[0] = new BigInteger(res[0]);
+        bires[1] = new BigInteger(res[1]);
+        return bires;
+    }
+
+    /**
+     * Releases the resources allocated for a fixed-basis
+     * multiplication table.
+     *
+     * @param curve_ptr Native pointer to curve.
+     * @param table_ptr Native pointer to fixed-basis multiplication
+     * table.
+     */
+    public static native void fmul_free(byte[] curve_ptr, byte[] table_ptr);
+}
+//CHECKSTYLE.ON: LocalVariableName
+//CHECKSTYLE.ON: LocalFinalVariableName
+//CHECKSTYLE.ON: MethodName
+//CHECKSTYLE.ON: ParameterName

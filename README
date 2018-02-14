@@ -1,0 +1,102 @@
+
+
+       VERIFICATUM ELLIPTIC CURVE LIBRARY FOR JAVA (VECJ)
+
+
+VECJ allows calling VEC from Java applications. This drastically
+improves the speed of such operations compared to pure Java
+implementations.
+
+In terms of licensing, VECJ is part of VEC. It is packaged separately
+for convenience and maintainability.
+
+The following assumes that you are using a release. Developers should
+also read README_DEV.
+
+
+                      QUICK START
+
+        $ ./configure; make; sudo make install
+
+
+                        BUILDING
+
+The source consists of a single Java class com.verificatum.vecj.VEC
+and C code that basically provides a wrapper of the VEC.
+
+The LIBRARY_PATH must point to libgmp.la and libvec.la and
+C_INCLUDE_PATH must point to gmp.h and vec.h. This is usually the case
+automatically after installing GMP and VEC.
+
+The javah command also needs to find the Java Native Interface (JNI)
+header files (jni.h and jni_md.h). The building scripts attempts to
+find these files automatically, but if this fails you need to add
+their locations to C_INCLUDE_PATH.
+
+Then use
+
+        $ ./configure
+        $ make
+
+to build the library.
+
+
+                       INSTALLING
+
+1) Use
+
+        $ make install
+
+   to install the library libvecj-<VERSION>.{la,a,so} and the jar-file
+   verificatum-vecj-<VERSION>.jar in the standard locations.
+
+2) You should also make sure that the newly installed jar-file is
+   found by java by updating your CLASSPATH. On Ubuntu you can use
+   something like the following snippet in your init script.
+
+       export CLASSPATH=/usr/local/share/java/verificatum-vecj-<VERSION>.jar:${CLASSPATH}
+
+3) You need to tell the JVM where your native library, i.e.,
+   libvecj-<VERSION>.{la,a,so} can be found. You may either pass the
+   location using the java.library.path property, e.g.,
+
+        $ java -Djava.library.path=/usr/local/lib/
+
+   or you can set the shell variable LD_LIBRARY_PATH once and for all
+   in an init file, e.g.,
+
+        export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
+
+4) You can test if you managed to build correctly by executing:
+
+        $ make check
+
+   This runs a set of tests.
+
+                        USAGE
+
+The software is supposed to be used by other applications, but you can
+use
+
+        $ make bench
+
+to benchmark the group operations.
+
+
+                   API DOCUMENTATION
+
+You may use
+ 
+        $ make api
+
+to invoke Javadoc to build the API. The API is not installed
+anywhere. You can copy it to any location.
+
+
+                     REPORTING BUGS
+
+Minor bugs should be reported in the repository system as issues or
+bugs. Security critical bugs, vulnerabilities, etc should be reported
+directly to the Verificatum Project. We will make best effort to
+disclose the information in a responsible way before the finder gets
+proper credit.

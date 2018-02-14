@@ -1,0 +1,17 @@
+#!/bin/sh
+
+if test x$1 = x"bin";
+then
+    printf "M4_BINDIR"
+elif test x$1 = "xlib";
+then
+    printf "M4_LIBDIR"
+elif test x$1 = "xjar";
+then
+    printf "M4_VECJ_JAR"
+elif test x$1 = "xcomplete";
+then
+    printf "vecj-M4_VERSION`('vec-M4_VEC_VERSION`)'"
+else
+    printf "Illegal parameter! (%s)\n" $1
+fi
