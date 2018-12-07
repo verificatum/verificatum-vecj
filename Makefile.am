@@ -96,7 +96,8 @@ $(JARFILE): .classes.stamp $(CLASSESROOT)/MANIFEST.MF
 
 # Generate header files for native code.
 .headers.stamp: $(JARFILE)
-	CLASSPATH=$(CLASSPATH) $(JAVAH) -jni -d $(JHDROUT) $(JAVAHFLAGS) com.verificatum.vecj.VEC;
+	$(JAVAC) -h $(JHDROUT) $(PKGPATH)/com/verificatum/vecj/VEC.java
+	@rm -f $(PKGPATH)/com/verificatum/vecj/VEC.class
 	@touch .headers.stamp
 
 scriptmacros.m4:
@@ -117,7 +118,7 @@ SUBDIRS = . native
 # Variables that determines which files are part of the distribution
 # and how they are installed.
 jar_DATA = $(JARFILE)
-dist_noinst_DATA = $(SRC) README COPYING NEWS AUTHORS ChangeLog .version.m4 .macros.m4
+dist_noinst_DATA = $(SRC) README.md COPYING NEWS AUTHORS ChangeLog .version.m4 .macros.m4
 dist_bin = $(BINDIR)/vecj-$(VERSION)-info
 dist_bin_SCRIPTS = $(BINDIR)/vecj-$(VERSION)-info
 
