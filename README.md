@@ -3,10 +3,11 @@
 
 ## Overview
 
-VECJ allows calling VEC from Java applications. This drastically
-improves the speed of such operations compared to pure Java
-implementations. The following assumes that you are using a
-release. Developers should also read `README_DEV.md`.
+VECJ allows calling [Verificatum Elliptic Curve library
+(VEC)](https://github.com/verificatum/verificatum-vec) from Java
+applications. This drastically improves the speed of such operations
+compared to pure Java implementations. The following assumes that you
+are using a release. Developers should also read `README_DEV.md`.
 
 
 ## Building
