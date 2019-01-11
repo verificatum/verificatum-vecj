@@ -35,8 +35,6 @@ ACE_PROG_JAVADOC
 
 AC_CONFIG_SUBDIRS([native])
 
-AM_CONDITIONAL([BITS64], [test x`getconf LONG_BIT` = x64])
-
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 

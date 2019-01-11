@@ -22,7 +22,14 @@ the case automatically after installing GMP and VEC. Then use
         ./configure
         make
 
-to build the library.
+to build the library. If you prefer to use the
+[Clang compiler](https://clang.llvm.org) in place of GCC for the native code,
+then you may use `./configure CC=clang` instead of the above to enable
+it.
+
+**Caution: Please understand that although it seems that Clang works
+as well as GCC, switching compiler is a large change for mature
+software.**
 
 
 # Installing
