@@ -49,7 +49,7 @@ fi
 AC_PROG_CC
 
 # We are building a library.
-AC_PROG_LIBTOOL
+LT_INIT
 
 # Check for header files.
 AC_CHECK_HEADERS([stdlib.h string.h unistd.h])

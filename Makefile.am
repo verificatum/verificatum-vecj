@@ -78,34 +78,34 @@ $(PKGPATH)/com/verificatum/vecj/BenchVEC.java
 
 ########################### Compilation #####################################
 
-all: .headers.stamp
+all: headers.stamp
 
 $(PKGPATH)/com/verificatum/vecj/VEC.java: $(PKGPATH)/com/verificatum/vecj/VEC.magic scriptmacros.m4
 	cat scriptmacros.m4 $(PKGPATH)/com/verificatum/vecj/VEC.magic | m4 > $(PKGPATH)/com/verificatum/vecj/VEC.java
 
 # Create the destination directory.
-.classesroot.stamp:
+classesroot.stamp:
 	mkdir -p $(CLASSESROOT)
-	@touch .classesroot.stamp
+	@touch classesroot.stamp
 
 # Jar manifest generated with current version.
 $(CLASSESROOT)/MANIFEST.MF: $(MFSRC)/MANIFEST.MF.src
 	cat .macros.m4 $(MFSRC)/MANIFEST.MF.src | m4 > $(CLASSESROOT)/MANIFEST.MF
 
 # Compile Java sources.
-.classes.stamp: .classesroot.stamp $(JAVA_FILES)
+classes.stamp: classesroot.stamp $(JAVA_FILES)
 	$(JAVAC) -Xlint:unchecked $(AM_JAVACFLAGS) $(JAVACFLAGS) -d $(CLASSESROOT) $(JAVA_FILES)
-	@touch .classes.stamp
+	@touch classes.stamp
 
 # Build JAR file.
-$(JARFILE): .classes.stamp $(CLASSESROOT)/MANIFEST.MF
+$(JARFILE): classes.stamp $(CLASSESROOT)/MANIFEST.MF
 	cd $(CLASSESROOT); $(JAR) cfm $@ MANIFEST.MF com; cp $@ ..
 
 # Generate header files for native code.
-.headers.stamp: $(JARFILE)
+headers.stamp: $(JARFILE)
 	$(JAVAC) -h $(JHDROUT) $(PKGPATH)/com/verificatum/vecj/VEC.java
 	@rm -f $(PKGPATH)/com/verificatum/vecj/VEC.class
-	@touch .headers.stamp
+	@touch headers.stamp
 
 scriptmacros.m4:
 	@printf "define(M4_VERSION, $(VERSION))dnl\n" > scriptmacros.m4
@@ -137,14 +137,14 @@ dist_bin_SCRIPTS = $(BINDIR)/vecj-$(VERSION)-info
 # Do a Checkstyle analysis of the source and save the result in
 # $(CSDIR)/checkstyle_report.txt.
 checkstyle: $(CSDIR)/checkstyle_report.txt $(CSDIR)/checkstyle_filter.sh
-$(CSDIR)/checkstyle_report.txt: .headers.stamp
+$(CSDIR)/checkstyle_report.txt: headers.stamp
 	rm -f $(CSDIR)/checkstyle_report_tmp.txt
 	cd $(CSDIR); ./checkstyle_wrapper checkstyle_configure.xml checkstyle_raw_report.txt $(CWD)/$(PKGPATH); ./checkstyle_filter.sh checkstyle_raw_report.txt checkstyle_report.txt
 
 # Do a Findbugs analysis of the jar and save the result in
 # $(FBDIR)/findbugs_report.txt.
 findbugs: $(FBDIR)/findbugs_report.txt
-$(FBDIR)/findbugs_report.txt: .headers.stamp
+$(FBDIR)/findbugs_report.txt: headers.stamp
 	./$(FBDIR)/findbugs_wrapper -textui -exclude $(FBDIR)/findbugs_configure.xml $(JARFILE) > $(FBDIR)/findbugs_report.txt
 
 # Do a PMD analysis of the source and save the result in
@@ -154,7 +154,7 @@ $(FBDIR)/findbugs_report.txt: .headers.stamp
 # directory exists, then it tries the same in the home directory. Edit
 # the wrapper if needed.
 pmd: $(PMDDIR)/pmd_report.txt
-$(PMDDIR)/pmd_report.txt: .headers.stamp
+$(PMDDIR)/pmd_report.txt: headers.stamp
 	./$(PMDDIR)/pmd_wrapper -rulesets $(PMDDIR)/pmd_ruleset.xml -d $(PKGPATH) | sed "s/.*verificatum\/\(com\/verificatum.*\)/\1/p" | uniq > $(PMDDIR)/pmd_raw_report.txt
 	cd $(PMDDIR); ./pmd_filter.sh pmd_raw_report.txt pmd_report.txt
 
@@ -167,7 +167,7 @@ analysis: checkstyle findbugs pmd $(STATANA)/generate_analysis.sh
 ########################## Coverage analysis ################################
 
 # Set JCOVJARDIR above to use this.
-jcov: .headers.stamp
+jcov: headers.stamp
 	mkdir -p $(JCOVDIR)
 	cd $(JCOVDIR); rm -f filtered.xml
 	cp $(JARFILE) $(JCOVDIR)/
@@ -178,7 +178,7 @@ jcov: .headers.stamp
 # Set COBHOME above to use this. A recent version is required. After
 # downloading Cobertura you need to convert the .sh files to Unix
 # format with dos2unix and make them executable before running.
-cobertura: .headers.stamp
+cobertura: headers.stamp
 	rm -rf $(COBDIR)
 	rm -f cobertura.ser
 	mkdir -p $(COBDIR)/classes
@@ -191,13 +191,13 @@ coverage: jcov cobertura
 
 ########################### Usage targets ###################################
 
-check: .headers.stamp
+check: headers.stamp
 	@java -ea -Djava.library.path=$(NATLIBS):$(libdir) -classpath $(JARFILE):$(jardir)/$(JARFILE) com.verificatum.vecj.TestVEC
 
-bench: .headers.stamp
+bench: headers.stamp
 	@java -Djava.library.path=$(NATLIBS):$(libdir) -classpath $(JARFILE):$(jardir)/$(JARFILE) com.verificatum.vecj.BenchVEC
 
-api: .headers.stamp
+api: headers.stamp
 	rm -rf api
 	javadoc -d api -link $(JDK_DOC) $(JAVA_FILES)
 
@@ -205,7 +205,7 @@ api: .headers.stamp
 ########################## Cleaning targets #################################
 
 # Autoconf variable for files to be cleaned.
-CLEANFILES = .*.stamp $(JARFILE) $(distfile) $(JHDROUT)/com_verificatum_vecj_VEC.h scriptmacros.m4 $(PKGPATH)/com/verificatum/vecj/VEC.java
+CLEANFILES = *.stamp $(JARFILE) $(distfile) $(JHDROUT)/com_verificatum_vecj_VEC.h scriptmacros.m4 $(PKGPATH)/com/verificatum/vecj/VEC.java
 
 cleanapi:
 	rm -rf api .libs
