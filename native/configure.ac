@@ -23,7 +23,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-AC_PREREQ([2.63])
+AC_PREREQ([2.69])
 AC_INIT([vecj],
         [m4_esyscmd([m4 .version.m4])],
         [info@verificatum.com])

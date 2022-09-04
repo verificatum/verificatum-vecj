@@ -192,10 +192,10 @@ coverage: jcov cobertura
 ########################### Usage targets ###################################
 
 check: headers.stamp
-	@java -ea -Djava.library.path=$(NATLIBS):$(libdir) -classpath $(JARFILE):$(jardir)/$(JARFILE) com.verificatum.vecj.TestVEC
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(libdir) java -ea -Djava.library.path=$(NATLIBS):$(libdir) -classpath $(JARFILE):$(jardir)/$(JARFILE) com.verificatum.vecj.TestVEC
 
 bench: headers.stamp
-	@java -Djava.library.path=$(NATLIBS):$(libdir) -classpath $(JARFILE):$(jardir)/$(JARFILE) com.verificatum.vecj.BenchVEC
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(libdir) java -Djava.library.path=$(NATLIBS):$(libdir) -classpath $(JARFILE):$(jardir)/$(JARFILE) com.verificatum.vecj.BenchVEC
 
 api: headers.stamp
 	rm -rf api
